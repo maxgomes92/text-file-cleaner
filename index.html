@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Text file cleaner</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="initial-scale=1, width=device-width" />
+  <script src="https://unpkg.com/react@latest/umd/react.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@latest/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@mui/material@latest/umd/material-ui.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/babel-standalone@latest/babel.min.js" crossorigin="anonymous"></script>
+  <!-- Fonts to support Material Design -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+  <!-- Icons to support Material Design -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const {
+      colors,
+      CssBaseline,
+      ThemeProvider,
+      Typography,
+      Container,
+      createTheme,
+      Box,
+      SvgIcon,
+      Link,
+      Button,
+      TextField,
+    } = MaterialUI;
+
+    const { useRef, useState, useEffect } = React
+
+    function Spacer({ height = 1, width = 1 }) {
+      const display = height === 1 ? "inline-block" : "block"
+      return <div style={{ height, width, display, flexShrink: 0 }} />
+    }
+
+    async function getFileContent(file) {
+
+    }
+
+    function App() {
+      const inputRef = useRef()
+      const [file, setFile] = useState()
+      const [originalText, setOriginalText] = useState('')
+      const [cleanText, setCleanText] = useState('')
+      const [copyBtnLabel, setCopyBtnLabel] = useState('Copy')
+      const [charsToRemove, setCharsToRemove] = useState(() => {
+        const x = new URLSearchParams(window.location.search)
+        return decodeURIComponent(x.get('q') || '')
+      })
+
+      const onSelectFileButtonClick = () => {
+        inputRef.current.click()
+      }
+
+      const onSelectFile = (event) => {
+        setFile(event.target.files[0])
+      }
+
+      useEffect(() => {
+        if (!file) {
+          return
+        }
+
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          setOriginalText(e.target.result)
+        };
+        reader.readAsText(file)
+      }, [file])
+
+      useEffect(() => {
+        if (!file || !charsToRemove) {
+          setCleanText(originalText)
+          return
+        }
+
+        setCleanText(() => {
+          return charsToRemove
+            .split('')
+            .reduce((acc, charToRemove) => {
+              return acc.replaceAll(charToRemove, '')
+            }, originalText)
+        })
+      }, [originalText, charsToRemove])
+
+      const onCharsToRemoveChange = (evt) => {
+        const value = evt.target.value
+
+        const newUrl = window.location.protocol
+          + "//"
+          + window.location.host
+          + window.location.pathname
+          + `?q=${encodeURIComponent(value)}`;
+
+        window.history.pushState({ path: newUrl }, '', newUrl);
+
+        setCharsToRemove(value)
+      }
+
+      const editorStyle = {
+        flexGrow: 1,
+        borderRadius: 5,
+        minHeight: 400,
+        padding: 20,
+        border: 'solid 1px',
+        flexBasis: 0,
+      }
+
+      const onCopyClick = () => {
+        setCopyBtnLabel('Copied')
+
+        setTimeout(() => {
+          setCopyBtnLabel('Copy')
+        }, 500)
+
+        navigator.clipboard.writeText(cleanText)
+      }
+
+      return (
+        <Container maxWidth="md">
+          <Box sx={{ my: 4 }}>
+            <Typography variant="h4" component="h1" gutterBottom>
+              Select a file to remove characters
+            </Typography>
+
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Button variant="contained" type="file" onClick={onSelectFileButtonClick}>
+                Select file
+              </Button>
+              <input style={{ display: 'none' }} ref={inputRef} type="file" onChange={onSelectFile} />
+              <Spacer width={10} />
+              <Typography variant="body1">
+                {file ? file.name : '[No file selected]'}
+              </Typography>
+            </Box>
+
+            <Spacer height={20} />
+
+            <TextField
+              label="Characters to remove"
+              variant="outlined"
+              fullWidth
+              onChange={onCharsToRemoveChange}
+              value={charsToRemove}
+              autoComplete="off"
+              spellCheck={false}
+            />
+
+            <Spacer height={20} />
+
+            <Box style={{ display: 'flex' }}>
+              <Box style={{ flexGrow: 1, flexBasis: 0 }}>
+                <Typography variant="body1">
+                  Original
+                </Typography>
+              </Box>
+
+              <Spacer width={20} />
+
+              <Box style={{ display: 'flex', flexGrow: 1, flexBasis: 0, justifyContent: 'space-between' }}>
+                <Typography variant="body1">
+                  Result
+                </Typography>
+
+                <Button variant="outlined" size="small" onClick={onCopyClick}>{copyBtnLabel}</Button>
+              </Box>
+            </Box>
+
+            <Box style={{ display: 'flex', paddingTop: 10 }}>
+              <Box style={editorStyle}>
+                {originalText}
+              </Box>
+              <Spacer width={20} />
+              <Box style={editorStyle}>
+                {cleanText}
+              </Box>
+            </Box>
+          </Box>
+        </Container>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(
+      <App />
+    );
+  </script>
+</body>
+
+</html>
