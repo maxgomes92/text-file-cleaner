@@ -49,6 +49,7 @@
       const [originalText, setOriginalText] = useState('')
       const [cleanText, setCleanText] = useState('')
       const [copyBtnLabel, setCopyBtnLabel] = useState('Copy')
+      const [selectedChar, setSelectedChar] = useState('')
       const [charsToRemove, setCharsToRemove] = useState(() => {
         const x = new URLSearchParams(window.location.search)
         return decodeURIComponent(x.get('q') || '')
@@ -122,6 +123,25 @@
         navigator.clipboard.writeText(cleanText)
       }
 
+      const onRowColChange = (evt) => {
+        if (!originalText) {
+          setSelectedChar('')
+          return
+        }
+
+        const row = document.getElementById('row-input').value
+        const col = document.getElementById('col-input').value
+
+        if (!row || !col) {
+          setSelectedChar('')
+          return
+        }
+
+        const inAList = originalText.split('\n')[row]
+
+        setSelectedChar(inAList ? inAList[col] : '')
+      }
+
       return (
         <Container maxWidth="md">
           <Box sx={{ my: 4 }}>
@@ -129,15 +149,27 @@
               Select a file to remove characters
             </Typography>
 
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Button variant="contained" type="file" onClick={onSelectFileButtonClick}>
-                Select file
-              </Button>
-              <input style={{ display: 'none' }} ref={inputRef} type="file" onChange={onSelectFile} />
-              <Spacer width={10} />
-              <Typography variant="body1">
-                {file ? file.name : '[No file selected]'}
-              </Typography>
+            <Box style={{ display: 'flex' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+                <Button variant="contained" type="file" onClick={onSelectFileButtonClick}>
+                  Select file
+                </Button>
+                <input style={{ display: 'none' }} ref={inputRef} type="file" onChange={onSelectFile} />
+                <Spacer width={10} />
+                <Typography variant="body1">
+                  {file ? file.name : '[No file selected]'}
+                </Typography>
+              </Box>
+
+              <Box style={{ display: 'flex', alignItems: 'center' }}>
+                <TextField type="number" placeholder="Row" style={{ width: 75 }} onChange={onRowColChange} id="row-input" />
+                <Spacer width={10} />
+                <TextField type="number" placeholder="Col" style={{ width: 75 }} onChange={onRowColChange} id="col-input" />
+                <Spacer width={10} />
+                <Typography variant="body1" style={{ width: 20 }}>
+                  {selectedChar || '...'}
+                </Typography>
+              </Box>
             </Box>
 
             <Spacer height={20} />
