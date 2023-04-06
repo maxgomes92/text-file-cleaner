@@ -105,12 +105,17 @@
       }
 
       const editorStyle = {
-        flexGrow: 1,
         borderRadius: 5,
         minHeight: 400,
         padding: 20,
         border: 'solid 1px',
-        flexBasis: 0,
+        flex: '1 1 0',
+        minWidth: 0,
+      }
+
+      const textStyle = {
+        whiteSpace: 'pre',
+        overflowX: 'scroll',
       }
 
       const onCopyClick = () => {
@@ -137,9 +142,17 @@
           return
         }
 
-        const inAList = originalText.split('\n')[row]
+        const line = parseInt(row) + 1
+        const column = parseInt(col) + 1
 
-        setSelectedChar(inAList ? inAList[col] : '')
+        if (line <= 0 || column <= 0) {
+          setSelectedChar('')
+          return
+        }
+
+        const inAList = originalText.split('\n')[line]
+
+        setSelectedChar(inAList ? inAList[column] : '')
       }
 
       return (
@@ -162,9 +175,9 @@
               </Box>
 
               <Box style={{ display: 'flex', alignItems: 'center' }}>
-                <TextField type="number" placeholder="Row" style={{ width: 75 }} onChange={onRowColChange} id="row-input" />
+                <TextField type="number" placeholder="Row" style={{ width: 75 }} onChange={onRowColChange} id="row-input" min="1" />
                 <Spacer width={10} />
-                <TextField type="number" placeholder="Col" style={{ width: 75 }} onChange={onRowColChange} id="col-input" />
+                <TextField type="number" placeholder="Col" style={{ width: 75 }} onChange={onRowColChange} id="col-input" min="1" />
                 <Spacer width={10} />
                 <Typography variant="body1" style={{ width: 20 }}>
                   {selectedChar || '...'}
@@ -206,11 +219,15 @@
 
             <Box style={{ display: 'flex', paddingTop: 10 }}>
               <Box style={editorStyle}>
-                {originalText}
+                <Typography variant="body1" style={textStyle}>
+                  {originalText}
+                </Typography>
               </Box>
               <Spacer width={20} />
               <Box style={editorStyle}>
-                {cleanText}
+                <Typography variant="body1" style={textStyle}>
+                  {cleanText}
+                </Typography>
               </Box>
             </Box>
           </Box>
