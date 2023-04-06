@@ -142,17 +142,17 @@
           return
         }
 
-        const line = parseInt(row) + 1
-        const column = parseInt(col) + 1
+        const line = parseInt(row)
+        const column = parseInt(col)
 
         if (line <= 0 || column <= 0) {
           setSelectedChar('')
           return
         }
 
-        const inAList = originalText.split('\n')[line]
+        const inAList = originalText.split('\n')[line-1]
 
-        setSelectedChar(inAList ? inAList[column] : '')
+        setSelectedChar(inAList ? inAList[column-1] : '')
       }
 
       return (
