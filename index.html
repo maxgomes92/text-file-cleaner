@@ -130,6 +130,10 @@
 
       const onCharsToRemoveChange = (evt) => {
         const value = evt.target.value
+          .replace(/"/ig, '')
+          .replace(/'/ig, '')
+          .replace(/\s/ig, '')
+          .replace(/,/ig, '')
 
         const newUrl = window.location.protocol
           + "//"
@@ -212,7 +216,7 @@
         <Container>
           <Box sx={{ my: 4 }}>
             <Typography variant="h4" component="h1" gutterBottom>
-              Select a file to remove characters
+              Select a CSV file to remove characters
             </Typography>
 
             <Box style={{ display: 'flex' }}>
