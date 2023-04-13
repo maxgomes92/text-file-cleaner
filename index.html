@@ -18,6 +18,28 @@
 <body>
   <div id="root"></div>
   <script type="text/babel">
+    const alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+
+    function CSVtoArray(text) {
+      var re_valid = /^\s*(?:'[^'\\]*(?:\\[\S\s][^'\\]*)*'|"[^"\\]*(?:\\[\S\s][^"\\]*)*"|[^,'"\s\\]*(?:\s+[^,'"\s\\]+)*)\s*(?:,\s*(?:'[^'\\]*(?:\\[\S\s][^'\\]*)*'|"[^"\\]*(?:\\[\S\s][^"\\]*)*"|[^,'"\s\\]*(?:\s+[^,'"\s\\]+)*)\s*)*$/;
+      var re_value = /(?!\s*$)\s*(?:'([^'\\]*(?:\\[\S\s][^'\\]*)*)'|"([^"\\]*(?:\\[\S\s][^"\\]*)*)"|([^,'"\s\\]*(?:\s+[^,'"\s\\]+)*))\s*(?:,|$)/g;
+      // Return NULL if input string is not well formed CSV string.
+      if (!re_valid.test(text)) return null;
+      var a = [];                     // Initialize array to receive values.
+      text.replace(re_value, // "Walk" the string using replace with callback.
+        function (m0, m1, m2, m3) {
+          // Remove backslash from \' in single quoted values.
+          if (m1 !== undefined) a.push(m1.replace(/\\'/g, "'"));
+          // Remove backslash from \" in double quoted values.
+          else if (m2 !== undefined) a.push(m2.replace(/\\"/g, '"'));
+          else if (m3 !== undefined) a.push(m3);
+          return ''; // Return empty string.
+        });
+      // Handle special case of empty last value.
+      if (/,\s*$/.test(text)) a.push('');
+      return a;
+    };
+
     const {
       colors,
       CssBaseline,
@@ -47,9 +69,12 @@
       const inputRef = useRef()
       const [file, setFile] = useState()
       const [originalText, setOriginalText] = useState('')
+      const [csvParsed, setCsvParsed] = useState()
       const [cleanText, setCleanText] = useState('')
       const [copyBtnLabel, setCopyBtnLabel] = useState('Copy')
       const [selectedChar, setSelectedChar] = useState('')
+      const [row, setRow] = useState('')
+      const [col, setCol] = useState('')
       const [charsToRemove, setCharsToRemove] = useState(() => {
         const x = new URLSearchParams(window.location.search)
         return decodeURIComponent(x.get('q') || '')
@@ -62,6 +87,18 @@
       const onSelectFile = (event) => {
         setFile(event.target.files[0])
       }
+
+      useEffect(() => {
+        if (!originalText) {
+          setCsvParsed()
+          return
+        }
+        setCsvParsed(
+          originalText
+            .split('\n')
+            .map(line => CSVtoArray(line))
+        )
+      }, [originalText])
 
       useEffect(() => {
         if (!file) {
@@ -128,32 +165,47 @@
         navigator.clipboard.writeText(cleanText)
       }
 
-      const onRowColChange = (evt) => {
-        if (!originalText) {
-          setSelectedChar('')
-          return
+      const onRowChange = (evt) => {
+        const value = evt.target.value
+
+        if (!value) {
+          setRow(value)
+          return;
         }
 
-        const row = document.getElementById('row-input').value
-        const col = document.getElementById('col-input').value
+        const rowValue = parseInt(value)
+        setRow(Math.max(rowValue, 1))
+      }
 
+      const onColChange = (evt) => {
+        const value = evt.target.value
+
+        setCol(
+          value
+            .replace(/[^A-Z]/ig, '')
+            .substr(0, 1)
+            .toUpperCase()
+        )
+      }
+
+      useEffect(() => {
         if (!row || !col) {
           setSelectedChar('')
           return
         }
 
         const line = parseInt(row)
-        const column = parseInt(col)
+        const column = alphabet.findIndex((c) => c === col)
 
-        if (line <= 0 || column <= 0) {
+        const fullRow = csvParsed[line - 1]
+
+        if (!fullRow) {
           setSelectedChar('')
           return
         }
 
-        const inAList = originalText.split('\n')[line-1]
-
-        setSelectedChar(inAList ? inAList[column-1] : '')
-      }
+        setSelectedChar(fullRow[column])
+      }, [row, col])
 
       return (
         <Container>
@@ -175,11 +227,11 @@
               </Box>
 
               <Box style={{ display: 'flex', alignItems: 'center' }}>
-                <TextField type="number" placeholder="Row" style={{ width: 75 }} onChange={onRowColChange} id="row-input" min="1" />
+                <TextField type="number" label="Row (0-99)" style={{ width: 110 }} onChange={onRowChange} id="row-input" value={row} />
                 <Spacer width={10} />
-                <TextField type="number" placeholder="Col" style={{ width: 75 }} onChange={onRowColChange} id="col-input" min="1" />
+                <TextField type="text" label="Col (A-Z)" style={{ width: 110 }} onChange={onColChange} id="col-input" value={col} />
                 <Spacer width={10} />
-                <Typography variant="body1" style={{ width: 20 }}>
+                <Typography variant="body1">
                   {selectedChar || '...'}
                 </Typography>
               </Box>
