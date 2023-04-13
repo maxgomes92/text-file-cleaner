@@ -219,7 +219,7 @@
                 <Button variant="contained" type="file" onClick={onSelectFileButtonClick}>
                   Select file
                 </Button>
-                <input style={{ display: 'none' }} ref={inputRef} type="file" onChange={onSelectFile} />
+                <input style={{ display: 'none' }} ref={inputRef} type="file" onChange={onSelectFile} accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" />
                 <Spacer width={10} />
                 <Typography variant="body1">
                   {file ? file.name : '[No file selected]'}
