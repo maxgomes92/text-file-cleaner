@@ -1,323 +1,408 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <title>Text file cleaner</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1, width=device-width" />
+    <script
+      src="lib/react.development.js"
+      crossorigin="anonymous"
+    ></script>
+    <script src="lib/react-dom.development.js"></script>
+    <script
+      src="lib/babel.min.js"
+      crossorigin="anonymous"
+    ></script>
+    <!-- Fonts to support Material Design -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+    />
+    <!-- Icons to support Material Design -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+    />
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="/text-file-cleaner/favicon.ico"
+    />
+    <script src="lib/material-ui.production.min.js"></script>
+  </head>
 
-<head>
-  <title>Text file cleaner</title>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="initial-scale=1, width=device-width" />
-  <script src="https://unpkg.com/react@latest/umd/react.development.js" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/react-dom@latest/umd/react-dom.development.js"></script>
-  <script src="https://unpkg.com/@mui/material@latest/umd/material-ui.development.js" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/babel-standalone@latest/babel.min.js" crossorigin="anonymous"></script>
-  <!-- Fonts to support Material Design -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
-  <!-- Icons to support Material Design -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
-  <link rel="icon" type="image/x-icon" href="/text-file-cleaner/favicon.ico">
-</head>
+  <body>
+    <div id="root"></div>
 
-<body>
-  <div id="root"></div>
-  <script type="text/babel">
-    const alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+    <script type="text/babel">
+      const alphabet = [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "O",
+        "P",
+        "Q",
+        "R",
+        "S",
+        "T",
+        "U",
+        "V",
+        "W",
+        "X",
+        "Y",
+        "Z",
+      ];
 
-    function CSVtoArray(text) {
-      var re_valid = /^\s*(?:'[^'\\]*(?:\\[\S\s][^'\\]*)*'|"[^"\\]*(?:\\[\S\s][^"\\]*)*"|[^,'"\s\\]*(?:\s+[^,'"\s\\]+)*)\s*(?:,\s*(?:'[^'\\]*(?:\\[\S\s][^'\\]*)*'|"[^"\\]*(?:\\[\S\s][^"\\]*)*"|[^,'"\s\\]*(?:\s+[^,'"\s\\]+)*)\s*)*$/;
-      var re_value = /(?!\s*$)\s*(?:'([^'\\]*(?:\\[\S\s][^'\\]*)*)'|"([^"\\]*(?:\\[\S\s][^"\\]*)*)"|([^,'"\s\\]*(?:\s+[^,'"\s\\]+)*))\s*(?:,|$)/g;
-      // Return NULL if input string is not well formed CSV string.
-      if (!re_valid.test(text)) return null;
-      var a = [];                     // Initialize array to receive values.
-      text.replace(re_value, // "Walk" the string using replace with callback.
-        function (m0, m1, m2, m3) {
-          // Remove backslash from \' in single quoted values.
-          if (m1 !== undefined) a.push(m1.replace(/\\'/g, "'"));
-          // Remove backslash from \" in double quoted values.
-          else if (m2 !== undefined) a.push(m2.replace(/\\"/g, '"'));
-          else if (m3 !== undefined) a.push(m3);
-          return ''; // Return empty string.
+      function CSVtoArray(text) {
+        var re_valid =
+          /^\s*(?:'[^'\\]*(?:\\[\S\s][^'\\]*)*'|"[^"\\]*(?:\\[\S\s][^"\\]*)*"|[^,'"\s\\]*(?:\s+[^,'"\s\\]+)*)\s*(?:,\s*(?:'[^'\\]*(?:\\[\S\s][^'\\]*)*'|"[^"\\]*(?:\\[\S\s][^"\\]*)*"|[^,'"\s\\]*(?:\s+[^,'"\s\\]+)*)\s*)*$/;
+        var re_value =
+          /(?!\s*$)\s*(?:'([^'\\]*(?:\\[\S\s][^'\\]*)*)'|"([^"\\]*(?:\\[\S\s][^"\\]*)*)"|([^,'"\s\\]*(?:\s+[^,'"\s\\]+)*))\s*(?:,|$)/g;
+        // Return NULL if input string is not well formed CSV string.
+        if (!re_valid.test(text)) return null;
+        var a = []; // Initialize array to receive values.
+        text.replace(
+          re_value, // "Walk" the string using replace with callback.
+          function (m0, m1, m2, m3) {
+            // Remove backslash from \' in single quoted values.
+            if (m1 !== undefined) a.push(m1.replace(/\\'/g, "'"));
+            // Remove backslash from \" in double quoted values.
+            else if (m2 !== undefined) a.push(m2.replace(/\\"/g, '"'));
+            else if (m3 !== undefined) a.push(m3);
+            return ""; // Return empty string.
+          }
+        );
+        // Handle special case of empty last value.
+        if (/,\s*$/.test(text)) a.push("");
+        return a;
+      }
+
+      const {
+        colors,
+        CssBaseline,
+        ThemeProvider,
+        Typography,
+        Container,
+        createTheme,
+        Box,
+        SvgIcon,
+        Link,
+        Button,
+        TextField,
+      } = MaterialUI;
+
+      const { useRef, useState, useEffect } = React;
+
+      function Spacer({ height = 1, width = 1 }) {
+        const display = height === 1 ? "inline-block" : "block";
+        return <div style={{ height, width, display, flexShrink: 0 }} />;
+      }
+
+      async function getFileContent(file) {}
+
+      function App() {
+        const inputRef = useRef();
+        const [file, setFile] = useState();
+        const [originalText, setOriginalText] = useState("");
+        const [csvParsed, setCsvParsed] = useState();
+        const [cleanText, setCleanText] = useState("");
+        const [copyBtnLabel, setCopyBtnLabel] = useState("Copy");
+        const [selectedChar, setSelectedChar] = useState("");
+        const [row, setRow] = useState("");
+        const [col, setCol] = useState("");
+        const [charsToRemove, setCharsToRemove] = useState(() => {
+          const x = new URLSearchParams(window.location.search);
+          return decodeURIComponent(x.get("q") || "");
         });
-      // Handle special case of empty last value.
-      if (/,\s*$/.test(text)) a.push('');
-      return a;
-    };
 
-    const {
-      colors,
-      CssBaseline,
-      ThemeProvider,
-      Typography,
-      Container,
-      createTheme,
-      Box,
-      SvgIcon,
-      Link,
-      Button,
-      TextField,
-    } = MaterialUI;
+        const generateAndDownloadFile = (filename, filetype, text) => {
+          var element = document.createElement("a");
+          element.setAttribute(
+            "href",
+            `data:${filetype};charset=utf-8,` + encodeURIComponent(text)
+          );
+          element.setAttribute("download", filename);
 
-    const { useRef, useState, useEffect } = React
+          element.style.display = "none";
+          document.body.appendChild(element);
 
-    function Spacer({ height = 1, width = 1 }) {
-      const display = height === 1 ? "inline-block" : "block"
-      return <div style={{ height, width, display, flexShrink: 0 }} />
-    }
+          element.click();
 
-    async function getFileContent(file) {
-
-    }
-
-    function App() {
-      const inputRef = useRef()
-      const [file, setFile] = useState()
-      const [originalText, setOriginalText] = useState('')
-      const [csvParsed, setCsvParsed] = useState()
-      const [cleanText, setCleanText] = useState('')
-      const [copyBtnLabel, setCopyBtnLabel] = useState('Copy')
-      const [selectedChar, setSelectedChar] = useState('')
-      const [row, setRow] = useState('')
-      const [col, setCol] = useState('')
-      const [charsToRemove, setCharsToRemove] = useState(() => {
-        const x = new URLSearchParams(window.location.search)
-        return decodeURIComponent(x.get('q') || '')
-      })
-
-      const generateAndDownloadFile = (filename, filetype, text) => {
-        var element = document.createElement('a');
-        element.setAttribute('href', `data:${filetype};charset=utf-8,` + encodeURIComponent(text));
-        element.setAttribute('download', filename);
-
-        element.style.display = 'none';
-        document.body.appendChild(element);
-
-        element.click();
-
-        document.body.removeChild(element);
-      }
-
-      const onDownloadClick = () => {
-        generateAndDownloadFile(file.name, file.type, cleanText)
-      }
-
-      const onSelectFileButtonClick = () => {
-        inputRef.current.click()
-      }
-
-      const onSelectFile = (event) => {
-        setFile(event.target.files[0])
-      }
-
-      useEffect(() => {
-        if (!originalText) {
-          setCsvParsed()
-          return
-        }
-        setCsvParsed(
-          originalText
-            .split('\n')
-            .map(line => CSVtoArray(line))
-        )
-      }, [originalText])
-
-      useEffect(() => {
-        if (!file) {
-          return
-        }
-
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          setOriginalText(e.target.result)
+          document.body.removeChild(element);
         };
-        reader.readAsText(file)
-      }, [file])
 
-      useEffect(() => {
-        if (!file || !charsToRemove) {
-          setCleanText(originalText)
-          return
-        }
+        const onDownloadClick = () => {
+          generateAndDownloadFile(file.name, file.type, cleanText);
+        };
 
-        setCleanText(() => {
-          return charsToRemove
-            .split('')
-            .reduce((acc, charToRemove) => {
-              return acc.replaceAll(charToRemove, '')
-            }, originalText)
-        })
-      }, [originalText, charsToRemove])
+        const onSelectFileButtonClick = () => {
+          inputRef.current.click();
+        };
 
-      const onCharsToRemoveChange = (evt) => {
-        const value = evt.target.value
-          .replace(/"/ig, '')
-          .replace(/'/ig, '')
-          .replace(/\s/ig, '')
-          .replace(/,/ig, '')
+        const onSelectFile = (event) => {
+          setFile(event.target.files[0]);
+        };
 
-        const newUrl = window.location.protocol
-          + "//"
-          + window.location.host
-          + window.location.pathname
-          + `?q=${encodeURIComponent(value)}`;
+        useEffect(() => {
+          if (!originalText) {
+            setCsvParsed();
+            return;
+          }
+          setCsvParsed(
+            originalText.split("\n").map((line) => CSVtoArray(line))
+          );
+        }, [originalText]);
 
-        window.history.pushState({ path: newUrl }, '', newUrl);
+        useEffect(() => {
+          if (!file) {
+            return;
+          }
 
-        setCharsToRemove(value)
-      }
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            setOriginalText(e.target.result);
+          };
+          reader.readAsText(file);
+        }, [file]);
 
-      const editorStyle = {
-        borderRadius: 5,
-        minHeight: 400,
-        padding: 20,
-        border: 'solid 1px',
-        flex: '1 1 0',
-        minWidth: 0,
-      }
+        useEffect(() => {
+          if (!file || !charsToRemove) {
+            setCleanText(originalText);
+            return;
+          }
 
-      const textStyle = {
-        whiteSpace: 'pre',
-        overflowX: 'scroll',
-      }
+          setCleanText(() => {
+            return charsToRemove.split("").reduce((acc, charToRemove) => {
+              return acc.replaceAll(charToRemove, "");
+            }, originalText);
+          });
+        }, [originalText, charsToRemove]);
 
-      const onCopyClick = () => {
-        setCopyBtnLabel('Copied')
+        const onCharsToRemoveChange = (evt) => {
+          const value = evt.target.value
+            .replace(/"/gi, "")
+            .replace(/'/gi, "")
+            .replace(/\s/gi, "")
+            .replace(/,/gi, "");
 
-        setTimeout(() => {
-          setCopyBtnLabel('Copy')
-        }, 500)
+          const newUrl =
+            window.location.protocol +
+            "//" +
+            window.location.host +
+            window.location.pathname +
+            `?q=${encodeURIComponent(value)}`;
 
-        navigator.clipboard.writeText(cleanText)
-      }
+          window.history.pushState({ path: newUrl }, "", newUrl);
 
-      const onRowChange = (evt) => {
-        const value = evt.target.value
+          setCharsToRemove(value);
+        };
 
-        if (!value) {
-          setRow(value)
-          return;
-        }
+        const editorStyle = {
+          borderRadius: 5,
+          minHeight: 400,
+          padding: 20,
+          border: "solid 1px",
+          flex: "1 1 0",
+          minWidth: 0,
+        };
 
-        const rowValue = parseInt(value)
-        setRow(Math.max(rowValue, 1))
-      }
+        const textStyle = {
+          whiteSpace: "pre",
+          overflowX: "scroll",
+        };
 
-      const onColChange = (evt) => {
-        const value = evt.target.value
+        const onCopyClick = () => {
+          setCopyBtnLabel("Copied");
 
-        setCol(
-          value
-            .replace(/[^A-Z]/ig, '')
-            .substr(0, 1)
-            .toUpperCase()
-        )
-      }
+          setTimeout(() => {
+            setCopyBtnLabel("Copy");
+          }, 500);
 
-      useEffect(() => {
-        if (!row || !col) {
-          setSelectedChar('')
-          return
-        }
+          navigator.clipboard.writeText(cleanText);
+        };
 
-        const line = parseInt(row)
-        const column = alphabet.findIndex((c) => c === col)
+        const onRowChange = (evt) => {
+          const value = evt.target.value;
 
-        const fullRow = csvParsed[line - 1]
+          if (!value) {
+            setRow(value);
+            return;
+          }
 
-        if (!fullRow) {
-          setSelectedChar('')
-          return
-        }
+          const rowValue = parseInt(value);
+          setRow(Math.max(rowValue, 1));
+        };
 
-        setSelectedChar(fullRow[column])
-      }, [row, col])
+        const onColChange = (evt) => {
+          const value = evt.target.value;
 
-      return (
-        <Container>
-          <Box sx={{ my: 4 }}>
-            <Typography variant="h4" component="h1" gutterBottom>
-              Select a CSV file to remove characters
-            </Typography>
+          setCol(
+            value
+              .replace(/[^A-Z]/gi, "")
+              .substr(0, 1)
+              .toUpperCase()
+          );
+        };
 
-            <Box style={{ display: 'flex' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
-                <Button variant="contained" type="file" onClick={onSelectFileButtonClick}>
-                  Select file
-                </Button>
-                <input style={{ display: 'none' }} ref={inputRef} type="file" onChange={onSelectFile} accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" />
-                <Spacer width={10} />
-                <Typography variant="body1">
-                  {file ? file.name : '[No file selected]'}
-                </Typography>
-              </Box>
+        useEffect(() => {
+          if (!row || !col) {
+            setSelectedChar("");
+            return;
+          }
 
-              <Box style={{ display: 'flex', alignItems: 'center' }}>
-                <TextField type="number" label="Row (0-99)" style={{ width: 110 }} onChange={onRowChange} id="row-input" value={row} />
-                <Spacer width={10} />
-                <TextField type="text" label="Col (A-Z)" style={{ width: 110 }} onChange={onColChange} id="col-input" value={col} />
-                <Spacer width={10} />
-                <Typography variant="body1">
-                  {selectedChar || '...'}
-                </Typography>
-              </Box>
-            </Box>
+          const line = parseInt(row);
+          const column = alphabet.findIndex((c) => c === col);
 
-            <Spacer height={20} />
+          const fullRow = csvParsed[line - 1];
 
-            <TextField
-              label="Characters to remove"
-              variant="outlined"
-              fullWidth
-              onChange={onCharsToRemoveChange}
-              value={charsToRemove}
-              autoComplete="off"
-              spellCheck={false}
-            />
+          if (!fullRow) {
+            setSelectedChar("");
+            return;
+          }
 
-            <Spacer height={20} />
+          setSelectedChar(fullRow[column]);
+        }, [row, col]);
 
-            <Box style={{ display: 'flex' }}>
-              <Box style={{ flexGrow: 1, flexBasis: 0 }}>
-                <Typography variant="body1">
-                  Original
-                </Typography>
-              </Box>
+        return (
+          <Container>
+            <Box sx={{ my: 4 }}>
+              <Typography variant="h4" component="h1" gutterBottom>
+                Select a CSV file to remove characters
+              </Typography>
 
-              <Spacer width={20} />
-
-              <Box style={{ display: 'flex', flexGrow: 1, flexBasis: 0, justifyContent: 'space-between' }}>
-                <Typography variant="body1">
-                  Result
-                </Typography>
-
-                <div>
-                  <Button variant="outlined" size="small" onClick={onCopyClick} disabled={!cleanText}>{copyBtnLabel}</Button>
+              <Box style={{ display: "flex" }}>
+                <Box
+                  sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}
+                >
+                  <Button
+                    variant="contained"
+                    type="file"
+                    onClick={onSelectFileButtonClick}
+                  >
+                    Select file
+                  </Button>
+                  <input
+                    style={{ display: "none" }}
+                    ref={inputRef}
+                    type="file"
+                    onChange={onSelectFile}
+                    accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                  />
                   <Spacer width={10} />
-                  <Button variant="outlined" size="small" onClick={onDownloadClick} disabled={!file}>Download</Button>
-                </div>
+                  <Typography variant="body1">
+                    {file ? file.name : "[No file selected]"}
+                  </Typography>
+                </Box>
+
+                <Box style={{ display: "flex", alignItems: "center" }}>
+                  <TextField
+                    type="number"
+                    label="Row (0-99)"
+                    style={{ width: 110 }}
+                    onChange={onRowChange}
+                    id="row-input"
+                    value={row}
+                  />
+                  <Spacer width={10} />
+                  <TextField
+                    type="text"
+                    label="Col (A-Z)"
+                    style={{ width: 110 }}
+                    onChange={onColChange}
+                    id="col-input"
+                    value={col}
+                  />
+                  <Spacer width={10} />
+                  <Typography variant="body1">
+                    {selectedChar || "..."}
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Spacer height={20} />
+
+              <TextField
+                label="Characters to remove"
+                variant="outlined"
+                fullWidth
+                onChange={onCharsToRemoveChange}
+                value={charsToRemove}
+                autoComplete="off"
+                spellCheck={false}
+              />
+
+              <Spacer height={20} />
+
+              <Box style={{ display: "flex" }}>
+                <Box style={{ flexGrow: 1, flexBasis: 0 }}>
+                  <Typography variant="body1">Original</Typography>
+                </Box>
+
+                <Spacer width={20} />
+
+                <Box
+                  style={{
+                    display: "flex",
+                    flexGrow: 1,
+                    flexBasis: 0,
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Typography variant="body1">Result</Typography>
+
+                  <div>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={onCopyClick}
+                      disabled={!cleanText}
+                    >
+                      {copyBtnLabel}
+                    </Button>
+                    <Spacer width={10} />
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={onDownloadClick}
+                      disabled={!file}
+                    >
+                      Download
+                    </Button>
+                  </div>
+                </Box>
+              </Box>
+
+              <Box style={{ display: "flex", paddingTop: 10 }}>
+                <Box style={editorStyle}>
+                  <Typography variant="body1" style={textStyle}>
+                    {originalText}
+                  </Typography>
+                </Box>
+                <Spacer width={20} />
+                <Box style={editorStyle}>
+                  <Typography variant="body1" style={textStyle}>
+                    {cleanText}
+                  </Typography>
+                </Box>
               </Box>
             </Box>
+          </Container>
+        );
+      }
 
-            <Box style={{ display: 'flex', paddingTop: 10 }}>
-              <Box style={editorStyle}>
-                <Typography variant="body1" style={textStyle}>
-                  {originalText}
-                </Typography>
-              </Box>
-              <Spacer width={20} />
-              <Box style={editorStyle}>
-                <Typography variant="body1" style={textStyle}>
-                  {cleanText}
-                </Typography>
-              </Box>
-            </Box>
-          </Box>
-        </Container>
-      );
-    }
-
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(
-      <App />
-    );
-  </script>
-</body>
-
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(<App />);
+    </script>
+  </body>
 </html>
